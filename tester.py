@@ -31,7 +31,6 @@ with Vimba.get_instance() as vimba:
     cams = vimba.get_all_cameras()
     with cams[0] as cam:
         setup_camera(cam)
-        #cam.set_pixel_format(PixelFormat.Mono8)
         while(1):
             frame = cam.get_frame()
             frame.convert_pixel_format(PixelFormat.Bgr8)
