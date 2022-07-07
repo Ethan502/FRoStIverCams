@@ -1,4 +1,2 @@
-The profiles keep screwing with the async grab for some reason, I am not sure why
--Look into the cam_setup function
-
-It seems that things are stuck in mono 8 for some reason, im not sure why. Ill have to look into it tomorrow
+Get the multi-threading to work!!!
+-read the code from aaron on bitbucket
