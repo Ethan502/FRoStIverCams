@@ -1,11 +1,14 @@
 import cv2
 from vimba import *
+import time
+import threading
 
 cam1_ID = "DEV_000F314F3265"
 cam2_ID = "DEV_000F314F3266"
 
 
 def setup_camera(cam: Camera):
+    print(cam.get_id())
     with cam:
         # Enable auto exposure time setting if camera supports it
         try:
@@ -39,28 +42,33 @@ def grabber(cam):
 
 with Vimba.get_instance() as vimba:
     cams = vimba.get_all_cameras()
+
+    #threads the setup camera function
+    threads = []
     for cam in cams:
-        setup_camera(cam)
-   
-    while(1):
-        frame = cam.get_frame()
-        frame.convert_pixel_format(PixelFormat.Bgr8)
-        #cv2.imshow('frame', frame.as_opencv_image())
-        filename = f"images/image{frame.get_id}.jpg"
-        cv2.imwrite(filename,frame.as_opencv_image())
+        t = threading.Thread(target=setup_camera, args=(cam,))
+        t.start()
+        threads.append(t)
+    for thread in threads:
+        thread.join()
 
-        if cv2.waitKey(1) == ord('q'):
-            break
+    for cam in cams:
+#___________________________________________________________________________ thread this section
+        with cam as c:
+            count = 0
+            while(count < 5):
+                frame=cam.get_frame()
+                frame.convert_pixel_format(PixelFormat.Bgr8)
+                if(cam.get_id() == cam1_ID):
+                    print("Ran1")
+                    filename = f"images1/image{count}.jpg"
+                elif(cam.get_id() == cam2_ID):
+                    print("Ran2")
+                    filename = f"images2/image{count}.jpg"
 
-    # while(1):
-    #     for cam in cams:
-    #         frame = cam.get_frame()
-    #         frame.convert_pixel_format(PixelFormat.Bgr8)
-    #         if(cam.get_id() == cam1_ID):
-    #             filename = f"images1/image{frame.get_id()}.jpg"
-    #         elif(cam.get_id() == cam2_ID):
-    #             filename = f"images2/image{frame.get_id()}.jpg"
-    #         cv2.imwrite(filename, frame.as_opencv_image())
+                cv2.imwrite(filename, frame.as_opencv_image())
+                count += 1
+#__________________________________________________________________________
 
-    
+    print(f"Finished cam setup in {finish - start} seconds")
     
