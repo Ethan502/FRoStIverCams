@@ -166,7 +166,7 @@ class Handler:
             cv2.imshow(msg.format(cam.get_name()), frame.as_opencv_image())
             
             #these are the added lines to save images
-            filename = f'static/images/frame{frame.get_id()}.jpg'
+            filename = f'images1/frame{frame.get_id()}.jpg'
             #frame.convert_pixel_format(PixelFormat.Bgr8)
             cv2.imwrite(filename, frame.as_opencv_image())
             
@@ -180,7 +180,6 @@ def main():
 
     with Vimba.get_instance():
         with get_camera(cam_id) as cam:
-            print("entered both the \'with\' statements")
             # Start Streaming, wait for five seconds, stop streaming
             setup_camera(cam)
             handler = Handler()
