@@ -1,7 +1,9 @@
-The threading on the setup_camera function works fine
+Threading needs to be faster
+    Three cameras currently can do 30 images in about 13 seconds. This needs to be closer to 5 seconds
+    Cameras must also be able to take photos at the exact same time
 
-Need to be able to thread the image save functionality. Well, i CAN thread it but i never get the full image
-I think it has something to do with trying to do it over an ethernet switch.
-    -Maybe i should try sleeping them a bit?
-    -Maybe they don't need to thread? Just save cam1 then cam2 alternating. But pictures at the same time would be ideal. If each camera saves at 2Hz then it could still work.
-    Just the previous version saved 10 pictures in 4 seconds. Thats 2.5Hz. But it was 5 from cam1 and 5 from cam2. Thats kinda dumb.
+Ideas:
+    Image compression
+    Objects that save the image as an array, writes the .jpg later
+    Dynamic coding (C++)
+    Images save all at the same time
