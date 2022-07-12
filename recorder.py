@@ -2,12 +2,17 @@ import cv2
 from vimba import *
 import time
 import threading
-import concurrent.futures as cf
+from camdata import camData
+
 
 cam1_ID = "DEV_000F314F3265"
 cam2_ID = "DEV_000F314F3266"
 cam3_ID = "DEV_000F314F3267"
 pic_count = 0
+data1 = camData()
+data2 = camData()
+data3 = camData()
+
 
 program_enable = True
 
@@ -40,6 +45,37 @@ def setup_camera(cam: Camera):
             pass
 
 
+def show_pic(cam: Camera,num):
+    with cam as c:
+        while(program_enable):
+            frame = c.get_frame()
+            frame.convert_pixel_format(PixelFormat.Bgr8)
+            pic = frame.as_opencv_image()
+            small = cv2.resize(pic, (0,0), fx=0.25, fy = 0.25)
+            cv2.imshow(f'Camera{num}', small)
+
+            if cv2.waitKey(1) == ord('q'):
+                break
+        cv2.destroyAllWindows()
+
+def save_pic(cam: Camera,num):
+    count = 0
+    with cam as c:
+        while(count < 10):
+            frame = c.get_frame()
+            frame.convert_pixel_format(PixelFormat.Bgr8)
+            if num == 1:
+                data1.pics.append(frame.as_opencv_image())
+            elif num == 2:
+                data2.pics.append(frame.as_opencv_image())
+            elif num == 3:
+                data3.pics.append(frame.as_opencv_image())
+            count += 1
+
+            if cv2.waitKey(1) == ord('q'):
+                break
+
+
 
 def grabber(cam,count):
     with cam as c: 
@@ -70,26 +106,46 @@ with Vimba.get_instance() as vimba:
     for thread in setup_threads:
         thread.join()
 
-    cam_threads = []
-   
-    print(cams)
-    counter = 0
 
     start = time.perf_counter()
 
-    while(counter < 10):
-        for cam in cams:
-            t = threading.Thread(target=grabber, args=(cam,counter))
-            t.start()
-            cam_threads.append(t)
-            time.sleep(0.25)
-        
-        for thread in cam_threads:
-            thread.join()
-        counter += 1
-        
-    
-    
+    t1 = threading.Thread(target=save_pic, args=(cams[0],1))
+    t2 = threading.Thread(target=save_pic, args=(cams[1],2))
+    t3 = threading.Thread(target=save_pic, args=(cams[2],3))
+
+    t1.start()
+    t2.start()
+    t3.start()
+
+    t1.join()
+    t2.join()
+    t3.join()
+
     finish = time.perf_counter()
+
+    #show_pic(cams[0],1)
+
+
+    # cam_threads = []
+   
+    # print(cams)
+    # counter = 0
+
+    # 
+
+    # while(counter < 10):
+    #     for cam in cams:
+    #         t = threading.Thread(target=grabber, args=(cam,counter))
+    #         t.start()
+    #         cam_threads.append(t)
+    #         time.sleep(0.25)
+        
+    #     for thread in cam_threads:
+    #         thread.join()
+    #     counter += 1
+        
+    
+    
+   
     print(f"Finished grabbing on 3 cams in {finish - start} seconds")
     
