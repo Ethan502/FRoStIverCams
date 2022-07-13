@@ -1,3 +1,4 @@
+from operator import itemgetter
 import cv2
 from vimba import *
 import time
@@ -9,9 +10,6 @@ cam1_ID = "DEV_000F314F3265"
 cam2_ID = "DEV_000F314F3266"
 cam3_ID = "DEV_000F314F3267"
 pic_count = 0
-data1 = camData()
-data2 = camData()
-data3 = camData()
 
 
 program_enable = True
@@ -46,6 +44,7 @@ def setup_camera(cam: Camera):
 
 
 def show_pic(cam: Camera,num):
+    counter = 0
     with cam as c:
         while(program_enable):
             frame = c.get_frame()
@@ -53,27 +52,40 @@ def show_pic(cam: Camera,num):
             pic = frame.as_opencv_image()
             small = cv2.resize(pic, (0,0), fx=0.25, fy = 0.25)
             cv2.imshow(f'Camera{num}', small)
+            cv2.imwrite(f'images1/image{counter}.jpg',frame.as_opencv_image())
+
+            counter += 1
 
             if cv2.waitKey(1) == ord('q'):
                 break
         cv2.destroyAllWindows()
 
 def save_pic(cam: Camera,num):
-    count = 0
+    
     with cam as c:
-        while(count < 10):
+        #while(count < 10):
             frame = c.get_frame()
             frame.convert_pixel_format(PixelFormat.Bgr8)
             if num == 1:
                 data1.pics.append(frame.as_opencv_image())
+                print("Added to cam 1 list")
             elif num == 2:
                 data2.pics.append(frame.as_opencv_image())
+                print("Added to cam 2 list")
             elif num == 3:
                 data3.pics.append(frame.as_opencv_image())
-            count += 1
+                print("Added to cam 3 list")
+            #count += 1
 
-            if cv2.waitKey(1) == ord('q'):
-                break
+
+            # if cv2.waitKey(1) == ord('q'):
+            #     program_enable = False
+            #     break
+
+def write_pic():
+    while(program_enable):
+        for item in camera_data_objects:
+            item.saver()
 
 
 
@@ -106,26 +118,33 @@ with Vimba.get_instance() as vimba:
     for thread in setup_threads:
         thread.join()
 
+    data1 = camData(1,cams[0])
+    data2 = camData(2,cams[1])
+    data3 = camData(3,cams[2])
+    camera_data_objects = [data1,data2,data3]
 
     start = time.perf_counter()
 
-    t1 = threading.Thread(target=save_pic, args=(cams[0],1))
-    t2 = threading.Thread(target=save_pic, args=(cams[1],2))
-    t3 = threading.Thread(target=save_pic, args=(cams[2],3))
+    count = 0
+    threads = []
+    while(count < 10):
+        for item in camera_data_objects:
+            t = threading.Thread(target=save_pic, args=(item.camera, item.numberID))
+            t.start()
+            threads.append(t)
 
-    t1.start()
-    t2.start()
-    t3.start()
+        for thread in threads:
+            thread.join()
 
-    t1.join()
-    t2.join()
-    t3.join()
+        count += 1
+    
 
     finish = time.perf_counter()
 
+    for obj in camera_data_objects:
+        obj.loop_saver()
+    
     #show_pic(cams[0],1)
-
-
     # cam_threads = []
    
     # print(cams)
