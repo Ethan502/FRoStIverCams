@@ -19,11 +19,12 @@ class camData():
         except:
             pass
 
+    # function to be used for convenience when testing code. Not implemented in primary design
     def loop_saver(self):
         for pic in self.pics:
             cv2.imwrite(f'images{self.numberID}/image{self.counter}.jpg',pic)
             self.counter += 1
-            time.sleep(1)
+            
 
             
         
