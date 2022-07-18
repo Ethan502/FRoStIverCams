@@ -73,20 +73,22 @@ def show_pic(cam: Camera,num):
 
 # function will save the photo as an array to the camera object
 def save_pic(cam: Camera,num):
+    counter = 1
     with cam as c:
         try:
             while(True):
                 frame = c.get_frame()
                 frame.convert_pixel_format(PixelFormat.Bgr8)
                 if num == 1:
-                    data1.pics.append(frame.as_opencv_image())
+                    cv2.imwrite(f'images{num}/image{counter}.jpg',frame.as_opencv_image())
                     print("Added to cam 1 list")
                 elif num == 2:
-                    data2.pics.append(frame.as_opencv_image())
+                    cv2.imwrite(f'images{num}/image{counter}.jpg',frame.as_opencv_image())
                     print("Added to cam 2 list")
                 elif num == 3:
-                    data3.pics.append(frame.as_opencv_image())
+                    cv2.imwrite(f'images{num}/image{counter}.jpg',frame.as_opencv_image())
                     print("Added to cam 3 list")
+                counter += 1
         except KeyboardInterrupt:
             pass
 
@@ -144,17 +146,14 @@ with Vimba.get_instance() as vimba:
     camera_thread1 = threading.Thread(target=save_pic, args=(data1.camera, data1.numberID))
     camera_thread2 = threading.Thread(target=save_pic, args=(data2.camera, data2.numberID))
     camera_thread3 = threading.Thread(target=save_pic, args=(data3.camera, data3.numberID))
-    write_thread = threading.Thread(target=write_pic,)
 
     camera_thread1.start()
     camera_thread2.start()
     camera_thread3.start()
-    write_thread.start()
 
     camera_thread1.join()
     camera_thread2.join()
     camera_thread3.join()
-    write_thread.join()
 
 
 
